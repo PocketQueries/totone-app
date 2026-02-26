@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OnlineMeetingRecorder/OnlineMeetingRecorder.csproj" />
+    <Project Path="src/LlmPrototype/LlmPrototype.csproj" />
+  </Folder>
+</Solution>

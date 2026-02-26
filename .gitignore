@@ -1,0 +1,61 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.vs/
+.vs/
+
+## Build
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.nupkg
+*.snupkg
+
+## IDE
+.idea/
+*.sln.docstates
+.vscode/
+*.code-workspace
+
+## OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## Application data
+Sessions/
+*.wav
+*.mp3
+
+## Secrets / credentials
+settings.json
+*.env
+.env.*
+appsettings.*.json
+!appsettings.json
+
+## Whisper models
+*.bin
+*.ggml
+
+## Local folders
+llm/
+publish/
+dist/
+
+## Claude Code
+.claude/
+
+## Backup files
+*.bak

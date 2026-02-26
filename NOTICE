@@ -1,0 +1,11 @@
+Online Meeting Recorder
+Copyright 2026 Pocket Queries Inc.
+
+This product includes software developed by Pocket Queries Inc.
+
+Third-party libraries used in this project:
+
+- NAudio (https://github.com/naudio/NAudio) - MIT License
+- CommunityToolkit.Mvvm (https://github.com/CommunityToolkit/dotnet) - MIT License
+- Microsoft.Extensions.Hosting (https://github.com/dotnet/runtime) - MIT License
+- Whisper.net (https://github.com/sandrohanea/whisper.net) - MIT License

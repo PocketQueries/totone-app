@@ -1,0 +1,79 @@
+<Window x:Class="OnlineMeetingRecorder.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Totonoe"
+        Width="400" Height="360"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True">
+
+    <Window.Resources>
+        <!-- テーマ値を自己完結で定義（起動タイミングの安全性確保） -->
+        <SolidColorBrush x:Key="SplashDarkCardTextBrush" Color="#E8E8E8"/>
+        <SolidColorBrush x:Key="SplashDarkCardTextSecondaryBrush" Color="#A0A0A0"/>
+        <SolidColorBrush x:Key="SplashAccentBrush" Color="#F58F98"/>
+        <FontFamily x:Key="SplashPrimaryFont">BIZ UDGothic, Segoe UI Variable, Segoe UI</FontFamily>
+    </Window.Resources>
+
+    <!-- 黒ベースグラデーション + ドロップシャドウで浮遊感 -->
+    <Border CornerRadius="18" Padding="32,28">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#1A1A1E" Offset="0.0"/>
+                <GradientStop Color="#242428" Offset="0.4"/>
+                <GradientStop Color="#1E1E24" Offset="1.0"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="6" BlurRadius="32"
+                              Opacity="0.55" Color="Black" Direction="270"/>
+        </Border.Effect>
+
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+
+            <!-- Toki-maru マスコット画像 -->
+            <Border Width="120" Height="120"
+                    CornerRadius="20"
+                    Margin="0,0,0,20"
+                    HorizontalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect ShadowDepth="2" BlurRadius="16"
+                                      Opacity="0.4" Color="Black"/>
+                </Border.Effect>
+                <Border.Background>
+                    <ImageBrush ImageSource="/Assets/toki-maru-splash.png"
+                                Stretch="Uniform"/>
+                </Border.Background>
+            </Border>
+
+            <!-- アプリ名 -->
+            <TextBlock Text="Totonoe"
+                       FontFamily="{StaticResource SplashPrimaryFont}"
+                       FontSize="24" FontWeight="SemiBold"
+                       Foreground="{StaticResource SplashDarkCardTextBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+
+            <!-- Indeterminate プログレスバー (Toki-Pink) -->
+            <ProgressBar IsIndeterminate="True"
+                         Height="4" Width="200"
+                         BorderThickness="0"
+                         Background="#2A2A2A"
+                         Foreground="{StaticResource SplashAccentBrush}"
+                         Margin="0,0,0,12"/>
+
+            <!-- ステータステキスト -->
+            <TextBlock x:Name="StatusText"
+                       Text="起動しています..."
+                       FontFamily="{StaticResource SplashPrimaryFont}"
+                       FontSize="12"
+                       Foreground="{StaticResource SplashDarkCardTextSecondaryBrush}"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Border>
+</Window>

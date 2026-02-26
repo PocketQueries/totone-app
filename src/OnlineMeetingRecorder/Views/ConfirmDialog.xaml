@@ -1,0 +1,60 @@
+<Window x:Class="OnlineMeetingRecorder.Views.ConfirmDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="確認"
+        SizeToContent="Height" Width="400"
+        Background="{StaticResource WindowBgBrush}"
+        FontFamily="{StaticResource PrimaryFont}"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True">
+
+    <Border Background="{StaticResource DarkCardBgBrush}"
+            CornerRadius="16" Padding="28,24"
+            BorderBrush="{StaticResource DarkCardBgAltBrush}"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="4" BlurRadius="24"
+                              Opacity="0.4" Color="Black"/>
+        </Border.Effect>
+        <StackPanel>
+            <!-- アイコン + タイトル -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                <TextBlock x:Name="IconText" Text="⚠" FontSize="24"
+                           VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBlock x:Name="TitleText" Text="確認"
+                           FontSize="18" FontWeight="SemiBold"
+                           Foreground="{StaticResource DarkCardTextBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- メッセージ -->
+            <TextBlock x:Name="MessageText" Text=""
+                       FontSize="14" TextWrapping="Wrap"
+                       Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                       Margin="0,0,0,24" LineHeight="22"/>
+
+            <!-- ボタン -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button x:Name="CopyButton" Content="📋 コピー"
+                        Style="{StaticResource GhostButton}"
+                        Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                        Click="OnCopy_Click"
+                        Visibility="Collapsed"
+                        Margin="0,0,8,0" Padding="12,0"
+                        Height="36" FontSize="12"
+                        ToolTip="エラーメッセージをクリップボードにコピー"/>
+                <Button x:Name="CancelButton" Content="キャンセル"
+                        Style="{StaticResource SecondaryButton}"
+                        Click="OnCancel_Click"
+                        Margin="0,0,8,0" Padding="20,0"/>
+                <Button x:Name="ConfirmButton" Content="削除する"
+                        Style="{StaticResource DangerButton}"
+                        Click="OnConfirm_Click"
+                        Padding="20,0"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

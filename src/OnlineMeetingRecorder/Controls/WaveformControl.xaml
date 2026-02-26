@@ -1,0 +1,31 @@
+<UserControl x:Class="OnlineMeetingRecorder.Controls.WaveformControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="80" d:DesignWidth="500"
+             MinHeight="60"
+             ClipToBounds="True"
+             Background="Transparent">
+    <Grid>
+        <!-- 波形描画領域 -->
+        <Border x:Name="WaveformBorder"
+                Background="#1A1A1A"
+                CornerRadius="8"
+                ClipToBounds="True">
+            <Grid>
+                <!-- 静的レイヤー: 波形バー + 話者オーバーレイ（WAVロード時のみ再描画） -->
+                <Canvas x:Name="StaticCanvas"
+                        IsHitTestVisible="False"/>
+                <!-- 動的レイヤー: 再生位置インジケーター（~30fps更新） -->
+                <Canvas x:Name="IndicatorCanvas"
+                        Background="Transparent"
+                        MouseLeftButtonDown="WaveformCanvas_MouseLeftButtonDown"
+                        MouseMove="WaveformCanvas_MouseMove"
+                        MouseLeftButtonUp="WaveformCanvas_MouseLeftButtonUp"
+                        Cursor="Hand"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

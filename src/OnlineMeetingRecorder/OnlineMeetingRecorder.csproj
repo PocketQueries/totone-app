@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>OnlineMeetingRecorder</AssemblyName>
+    <RootNamespace>OnlineMeetingRecorder</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <!-- LLM組み込みビルド: dotnet build -p:EnableLlm=true -->
+    <EnableLlm>true</EnableLlm>
+  </PropertyGroup>
+
+  <!-- ENABLE_LLM コンパイルシンボル定義 -->
+  <PropertyGroup Condition="'$(EnableLlm)' == 'true'">
+    <DefineConstants>$(DefineConstants);ENABLE_LLM</DefineConstants>
+  </PropertyGroup>
+
+  <!-- System.Windows.Forms.NotifyIcon 用（システムトレイ常駐 F-03） -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="app.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="Assets\toki-maru-splash.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="NAudio.Lame" Version="2.1.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="Whisper.net" Version="1.9.0" />
+    <PackageReference Include="Whisper.net.Runtime" Version="1.9.0" />
+    <PackageReference Include="Whisper.net.Runtime.Cuda" Version="1.9.0" />
+  </ItemGroup>
+
+  <!-- LLamaSharp パッケージ (LLM組み込みビルド時のみ) -->
+  <ItemGroup Condition="'$(EnableLlm)' == 'true'">
+    <PackageReference Include="LLamaSharp" Version="0.26.0" />
+    <PackageReference Include="LLamaSharp.Backend.Cuda12" Version="0.26.0" />
+  </ItemGroup>
+
+  <!-- Publish 時に不要なランタイムを除外（win-x64 以外） -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <!-- Whisper: linux / win-arm64 / win-x86 ランタイムを除外 -->
+    <NativeLibsToExclude Include="$(NuGetPackageRoot)whisper.net.runtime\**\runtimes\linux-*\**" />
+    <NativeLibsToExclude Include="$(NuGetPackageRoot)whisper.net.runtime\**\runtimes\osx-*\**" />
+    <NativeLibsToExclude Include="$(NuGetPackageRoot)whisper.net.runtime\**\runtimes\win-arm64\**" />
+    <NativeLibsToExclude Include="$(NuGetPackageRoot)whisper.net.runtime\**\runtimes\win-x86\**" />
+    <NativeLibsToExclude Include="$(NuGetPackageRoot)whisper.net.runtime.cuda\**\runtimes\linux-*\**" />
+  </ItemGroup>
+
+</Project>

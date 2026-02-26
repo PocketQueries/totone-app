@@ -1,0 +1,190 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="system-architecture" name="システム構成図">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- タイトル -->
+        <mxCell id="title" value="Online Meeting Recorder - システム構成図" style="text;html=1;fontSize=18;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- 外部デバイス -->
+        <mxCell id="mic" value="マイク" style="shape=mxgraph.signs.tech.microphone;fillColor=#FFB74D;strokeColor=#E65100;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="60" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="speaker" value="スピーカー/&#xa;ヘッドセット" style="shape=mxgraph.signs.tech.speaker_2;fillColor=#64B5F6;strokeColor=#1565C0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="280" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- WASAPI層 -->
+        <mxCell id="wasapi-group" value="Windows Audio Session API (WASAPI)" style="swimlane;startSize=30;fillColor=#E3F2FD;strokeColor=#1565C0;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="200" y="90" width="200" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="wasapi-capture" value="WasapiCapture&#xa;(SharedMode)" style="rounded=1;fillColor=#BBDEFB;strokeColor=#1565C0;" vertex="1" parent="wasapi-group">
+          <mxGeometry x="20" y="50" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="wasapi-loopback" value="WasapiLoopback&#xa;Capture" style="rounded=1;fillColor=#BBDEFB;strokeColor=#1565C0;" vertex="1" parent="wasapi-group">
+          <mxGeometry x="20" y="140" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="wasapi-enum" value="MMDevice&#xa;Enumerator" style="rounded=1;fillColor=#BBDEFB;strokeColor=#1565C0;" vertex="1" parent="wasapi-group">
+          <mxGeometry x="20" y="220" width="160" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Service層 -->
+        <mxCell id="service-group" value="Service Layer" style="swimlane;startSize=30;fillColor=#E8F5E9;strokeColor=#2E7D32;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="70" width="340" height="360" as="geometry"/>
+        </mxCell>
+        <mxCell id="mic-source" value="MicCaptureSource" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="service-group">
+          <mxGeometry x="20" y="50" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="lb-source" value="LoopbackCapture&#xa;Source" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="service-group">
+          <mxGeometry x="20" y="110" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="recorder" value="AudioRecorder&#xa;(オーケストレータ)" style="rounded=1;fillColor=#A5D6A7;strokeColor=#1B5E20;fontStyle=1;" vertex="1" parent="service-group">
+          <mxGeometry x="180" y="70" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="level-meter" value="AudioLevelMeter" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="service-group">
+          <mxGeometry x="180" y="140" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="health-mon" value="AudioHealth&#xa;Monitor" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="service-group">
+          <mxGeometry x="180" y="200" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="device-svc" value="AudioDevice&#xa;Service" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="service-group">
+          <mxGeometry x="20" y="180" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="stt-svc" value="ITranscription&#xa;Service" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;dashed=1;" vertex="1" parent="service-group">
+          <mxGeometry x="20" y="260" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="minutes-svc" value="IMinutes&#xa;Generator" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;dashed=1;" vertex="1" parent="service-group">
+          <mxGeometry x="180" y="260" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="session-mgr" value="SessionManager" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="service-group">
+          <mxGeometry x="100" y="320" width="140" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ViewModel層 -->
+        <mxCell id="vm-group" value="ViewModel Layer (MVVM)" style="swimlane;startSize=30;fillColor=#FFF3E0;strokeColor=#E65100;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="90" width="300" height="260" as="geometry"/>
+        </mxCell>
+        <mxCell id="main-vm" value="MainViewModel" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;fontStyle=1;" vertex="1" parent="vm-group">
+          <mxGeometry x="80" y="40" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="rec-vm" value="RecordingViewModel" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;" vertex="1" parent="vm-group">
+          <mxGeometry x="20" y="100" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="level-vm" value="AudioLevelViewModel" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;" vertex="1" parent="vm-group">
+          <mxGeometry x="160" y="100" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="device-vm" value="DeviceSelection&#xa;ViewModel" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;" vertex="1" parent="vm-group">
+          <mxGeometry x="20" y="170" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="trans-vm" value="Transcription&#xa;ViewModel" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;" vertex="1" parent="vm-group">
+          <mxGeometry x="160" y="170" width="130" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- View層 -->
+        <mxCell id="view-group" value="View Layer (WPF / XAML)" style="swimlane;startSize=30;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="90" width="180" height="260" as="geometry"/>
+        </mxCell>
+        <mxCell id="main-win" value="MainWindow" style="rounded=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontStyle=1;" vertex="1" parent="view-group">
+          <mxGeometry x="20" y="40" width="140" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="rec-view" value="RecordingView" style="rounded=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;" vertex="1" parent="view-group">
+          <mxGeometry x="20" y="85" width="140" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="level-ctl" value="LevelMeterControl" style="rounded=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;" vertex="1" parent="view-group">
+          <mxGeometry x="20" y="130" width="140" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="device-view" value="DeviceSelectionView" style="rounded=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;" vertex="1" parent="view-group">
+          <mxGeometry x="20" y="175" width="140" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="trans-view" value="TranscriptionView" style="rounded=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;" vertex="1" parent="view-group">
+          <mxGeometry x="20" y="220" width="140" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- ストレージ -->
+        <mxCell id="storage" value="ローカルストレージ&#xa;(%LOCALAPPDATA%)" style="shape=cylinder3;fillColor=#ECEFF1;strokeColor=#37474F;fontStyle=1;size=10;" vertex="1" parent="1">
+          <mxGeometry x="560" y="500" width="140" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="wav-files" value="mic.wav&#xa;speaker.wav" style="shape=document;fillColor=#FFF9C4;strokeColor=#F57F17;" vertex="1" parent="1">
+          <mxGeometry x="400" y="510" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="json-files" value="transcript.json&#xa;session.json" style="shape=document;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="1">
+          <mxGeometry x="740" y="510" width="100" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- 外部API -->
+        <mxCell id="cloud" value="クラウド API&#xa;(オプション)" style="shape=cloud;fillColor=#E3F2FD;strokeColor=#1565C0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="480" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="whisper-api" value="OpenAI&#xa;Whisper API" style="rounded=1;fillColor=#BBDEFB;strokeColor=#1565C0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="580" width="100" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="llm-api" value="LLM API&#xa;(未定)" style="rounded=1;fillColor=#BBDEFB;strokeColor=#1565C0;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="580" width="100" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- 矢印 -->
+        <mxCell id="e1" edge="1" source="mic" target="wasapi-capture" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" edge="1" source="speaker" target="wasapi-loopback" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" edge="1" source="wasapi-capture" target="mic-source" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" edge="1" source="wasapi-loopback" target="lb-source" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" edge="1" source="mic-source" target="recorder" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" edge="1" source="lb-source" target="recorder" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" edge="1" source="recorder" target="level-meter" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" edge="1" source="recorder" target="health-mon" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e9" edge="1" source="wasapi-enum" target="device-svc" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e10" edge="1" source="recorder" target="rec-vm" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e11" edge="1" source="level-meter" target="level-vm" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e12" edge="1" source="device-svc" target="device-vm" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e13" edge="1" source="main-vm" target="main-win" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e14" edge="1" source="recorder" target="storage" parent="1" style="dashed=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e15" edge="1" source="storage" target="wav-files" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e16" edge="1" source="storage" target="json-files" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e17" edge="1" source="stt-svc" target="cloud" parent="1" style="dashed=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e18" edge="1" source="cloud" target="whisper-api" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e19" edge="1" source="cloud" target="llm-api" parent="1" style="dashed=1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
