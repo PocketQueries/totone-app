@@ -69,6 +69,17 @@ MainWindow.xaml / SettingsWindow.xaml (Views)
 - **コメント**: UI・ドメイン関連は日本語、技術的コメントは英語
 - **git commit メッセージ**: 日本語で記述する
 
+## Issue 駆動開発フロー
+
+- Issue 番号・URL を受け取ったら、まず `gh issue view <番号>` で内容を確認する
+- **最新の main から分岐**してブランチを作成する（`git checkout main && git pull origin main`）
+- ブランチ命名: `feature/#123-説明` / `fix/#123-説明` / `refactor/#123-説明` / `docs/#123-説明`
+- **作業開始時**: `gh issue comment <番号>` で着手コメントを投稿する
+- コミットメッセージに Issue 番号を含める（例: `feat: 録音キャンセル機能を追加 #123`）
+- **作業完了時**: `gh issue comment <番号>` で完了コメントを投稿する
+- PR 作成時、本文に `Closes #123` を含めて Issue を自動クローズする
+- 詳細は `docs/development-flow.md` を参照
+
 ## ドキュメント管理ルール
 
 - 資料は `docs/` フォルダ配下で管理する

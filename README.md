@@ -103,6 +103,7 @@ dotnet run --project src/LlmPrototype/LlmPrototype.csproj -- "D:\models\Qwen3-4B
 | [mvp-implementation.md](docs/mvp-implementation.md) | 実装設計書（MVP + v1.1 LLM議事録仕様） |
 | [design-guide.md](docs/design-guide.md) | UI/UXデザインガイド（Totonoe コンセプト・カラー・コンポーネント仕様） |
 | [setup-guide.md](docs/setup-guide.md) | 配布版セットアップ手順書（ランタイム・モデルDL・初期設定） |
+| [development-flow.md](docs/development-flow.md) | Issue 駆動開発フロー（ブランチ規則・Claude Code 連携） |
 
 ## 注意事項
 
