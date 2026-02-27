@@ -178,6 +178,15 @@ public partial class TranscriptionViewModel : ObservableObject
     [ObservableProperty]
     private bool _isTotonoePromptVisible;
 
+    // --- プロンプトプリセット選択 ---
+
+    /// <summary>利用可能なプロンプトプリセット一覧</summary>
+    public ObservableCollection<PromptPreset> AvailablePresets { get; } = new();
+
+    /// <summary>選択中のプロンプトプリセット</summary>
+    [ObservableProperty]
+    private PromptPreset? _selectedPreset;
+
     public ObservableCollection<TranscriptSegment> Segments { get; } = new();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -202,6 +211,7 @@ public partial class TranscriptionViewModel : ObservableObject
         _logger = logger;
 
         RefreshAvailableEngines();
+        RefreshAvailablePresets();
     }
 
     // CommunityToolkit.Mvvm の partial method hooks
@@ -835,13 +845,46 @@ public partial class TranscriptionViewModel : ObservableObject
         }
     }
 
+    // --- プロンプトプリセット ---
+
+    /// <summary>プリセット一覧を設定から更新する</summary>
+    public void RefreshAvailablePresets()
+    {
+        AvailablePresets.Clear();
+        foreach (var preset in _settings.Settings.PromptPresets)
+            AvailablePresets.Add(preset);
+
+        SelectedPreset = AvailablePresets
+            .FirstOrDefault(p => p.Id == _settings.Settings.SelectedPresetId)
+            ?? AvailablePresets.FirstOrDefault();
+    }
+
+    partial void OnSelectedPresetChanged(PromptPreset? value)
+    {
+        if (value != null)
+        {
+            _settings.Settings.SelectedPresetId = value.Id;
+
+            // プロンプト表示中なら自動更新
+            if (IsMinutesPromptVisible)
+                RefreshMinutesPrompts();
+            if (IsTotonoePromptVisible)
+                RefreshTotonoePrompts();
+        }
+    }
+
     // --- プロンプト編集機能 ---
 
     /// <summary>議事録用プロンプトを現在のセッション情報で更新する</summary>
     private void RefreshMinutesPrompts()
     {
         if (CurrentSession == null || Segments.Count == 0) return;
-        MinutesSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null);
+
+        // プリセットが選択されている場合はそのシステムプロンプトをベースに使用
+        var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+            ? SelectedPreset.SystemPrompt
+            : null;
+        MinutesSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null, basePrompt);
         MinutesUserPrompt = CloudMinutesGenerator.BuildUserMessage(CurrentSession, Segments.ToList());
     }
 
@@ -850,7 +893,12 @@ public partial class TranscriptionViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(MinutesText)) return;
         var context = BuildTotonoeContext();
-        TotonoeSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(context);
+
+        // プリセットが選択されている場合はそのシステムプロンプトをベースに使用
+        var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+            ? SelectedPreset.SystemPrompt
+            : null;
+        TotonoeSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(context, basePrompt);
         TotonoeUserPrompt = CloudMinutesGenerator.BuildTotonoeUserMessage(MinutesText);
     }
 
@@ -917,6 +965,7 @@ public partial class TranscriptionViewModel : ObservableObject
     {
         IsTranscriptionConfigured = GetActiveService().IsAvailable;
         RefreshAvailableEngines();
+        RefreshAvailablePresets();
     }
 
     /// <summary>

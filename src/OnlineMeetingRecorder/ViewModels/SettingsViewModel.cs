@@ -1,7 +1,9 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OnlineMeetingRecorder.Models;
+using OnlineMeetingRecorder.Services.Minutes;
 using OnlineMeetingRecorder.Services.Settings;
 
 namespace OnlineMeetingRecorder.ViewModels;
@@ -49,6 +51,35 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _statusText = "";
 
+    // --- プロンプトプリセット管理 ---
+
+    /// <summary>プリセット一覧</summary>
+    public ObservableCollection<PromptPreset> PromptPresets { get; } = new();
+
+    /// <summary>編集中のプリセット</summary>
+    [ObservableProperty]
+    private PromptPreset? _selectedPreset;
+
+    /// <summary>プリセット名（編集用）</summary>
+    [ObservableProperty]
+    private string _presetName = string.Empty;
+
+    /// <summary>プリセットのシステムプロンプト（編集用）</summary>
+    [ObservableProperty]
+    private string _presetSystemPrompt = string.Empty;
+
+    /// <summary>選択中プリセットが組み込みか（削除ボタンの表示制御用）</summary>
+    [ObservableProperty]
+    private bool _isSelectedPresetBuiltIn;
+
+    /// <summary>プリセット編集エリアを表示するか</summary>
+    [ObservableProperty]
+    private bool _isPresetEditorVisible;
+
+    /// <summary>プリセット名が編集可能か</summary>
+    [ObservableProperty]
+    private bool _canEditPresetName;
+
     /// <summary>LLM組み込みビルドかどうか（UIの表示制御に使用）</summary>
     public bool IsLlmAvailable =>
 #if ENABLE_LLM
@@ -78,6 +109,80 @@ public partial class SettingsViewModel : ObservableObject
         AudioExportFormat = s.AudioExportFormat;
         SessionStoragePath = s.SessionStoragePath;
         MeetingDetectionEnabled = s.MeetingDetectionEnabled;
+
+        // プリセット一覧をロード
+        PromptPresets.Clear();
+        foreach (var preset in s.PromptPresets)
+            PromptPresets.Add(preset);
+
+        SelectedPreset = PromptPresets.FirstOrDefault(p => p.Id == s.SelectedPresetId)
+            ?? PromptPresets.FirstOrDefault();
+    }
+
+    partial void OnSelectedPresetChanged(PromptPreset? value)
+    {
+        if (value != null)
+        {
+            _isUpdatingFromSelection = true;
+            PresetName = value.Name;
+            PresetSystemPrompt = value.SystemPrompt;
+            _isUpdatingFromSelection = false;
+            IsSelectedPresetBuiltIn = value.IsBuiltIn;
+            CanEditPresetName = !value.IsBuiltIn;
+            IsPresetEditorVisible = true;
+        }
+        else
+        {
+            PresetName = string.Empty;
+            PresetSystemPrompt = string.Empty;
+            IsSelectedPresetBuiltIn = false;
+            CanEditPresetName = false;
+            IsPresetEditorVisible = false;
+        }
+    }
+
+    // 選択変更によるプロパティ更新時にリアルタイム反映を抑制するフラグ
+    private bool _isUpdatingFromSelection;
+
+    partial void OnPresetNameChanged(string value)
+    {
+        if (_isUpdatingFromSelection || SelectedPreset == null) return;
+        SelectedPreset.Name = value;
+        // ObservableCollection の表示を更新するためリフレッシュ
+        var idx = PromptPresets.IndexOf(SelectedPreset);
+        if (idx >= 0)
+        {
+            PromptPresets[idx] = SelectedPreset;
+            SelectedPreset = SelectedPreset;
+        }
+    }
+
+    partial void OnPresetSystemPromptChanged(string value)
+    {
+        if (_isUpdatingFromSelection || SelectedPreset == null) return;
+        SelectedPreset.SystemPrompt = value;
+    }
+
+    [RelayCommand]
+    private void AddPreset()
+    {
+        var newPreset = new PromptPreset
+        {
+            Name = "新規プリセット",
+            SystemPrompt = CloudMinutesGenerator.GetDefaultSystemPromptBase()
+        };
+        PromptPresets.Add(newPreset);
+        SelectedPreset = newPreset;
+    }
+
+    [RelayCommand]
+    private void DeletePreset()
+    {
+        if (SelectedPreset == null || SelectedPreset.IsBuiltIn) return;
+
+        var idx = PromptPresets.IndexOf(SelectedPreset);
+        PromptPresets.Remove(SelectedPreset);
+        SelectedPreset = PromptPresets.ElementAtOrDefault(Math.Min(idx, PromptPresets.Count - 1));
     }
 
     [RelayCommand]
@@ -95,6 +200,10 @@ public partial class SettingsViewModel : ObservableObject
         _settingsService.Settings.AudioExportFormat = AudioExportFormat;
         _settingsService.Settings.SessionStoragePath = SessionStoragePath;
         _settingsService.Settings.MeetingDetectionEnabled = MeetingDetectionEnabled;
+
+        // プリセットを書き戻し
+        _settingsService.Settings.PromptPresets = PromptPresets.ToList();
+        _settingsService.Settings.SelectedPresetId = SelectedPreset?.Id ?? string.Empty;
 
         try
         {

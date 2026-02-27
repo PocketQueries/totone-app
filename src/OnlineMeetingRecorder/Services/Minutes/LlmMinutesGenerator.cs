@@ -173,29 +173,8 @@ public class LlmMinutesGenerator : IMinutesGenerator, IDisposable
 
     private static string BuildPrompt(RecordingSession session, string transcript)
     {
-        var systemPrompt = """
-            あなたは会議の議事録を作成するアシスタントです。
-            以下の会議の文字起こしを読み、議事録をMarkdown形式で作成してください。
-
-            議事録には以下のセクションを含めてください：
-            1. **要約** - 会議全体の概要（2-3文）
-            2. **決定事項** - 会議で決まったことのリスト
-            3. **アクションアイテム** - 担当者と期限を含むTODOリスト
-            4. **次回予定** - 次回の会議予定
-
-            簡潔かつ正確に記述してください。
-
-            また、議事録の最後に「## 追加情報の提案」というセクションを追加し、
-            この議事録をより正確に完成させるために確認・補足が必要な情報を箇条書きで記載してください。
-            具体的には以下の観点で提案してください：
-            - 文字起こしで聞き取りにくい・不明確な単語や固有名詞
-            - 不自然な文章や意味が通りにくい箇所
-            - 参加者の正確な氏名・所属
-            - 会議の目的や背景で補足があると良い情報
-            - 専門用語やドメイン固有の知識で確認が必要なもの
-
-            提案がない場合は「## 追加情報の提案」セクション自体を省略してください。
-            """;
+        var systemPrompt = CloudMinutesGenerator.GetDefaultSystemPromptBase()
+            + "\n\n" + CloudMinutesGenerator.GetSuggestionPromptSuffix();
 
         var header = $"会議日時: {session.StartTime:yyyy/MM/dd HH:mm} 〜 {session.EndTime:yyyy/MM/dd HH:mm}\n" +
                      $"所要時間: {session.Duration:hh\\:mm\\:ss}\n\n";

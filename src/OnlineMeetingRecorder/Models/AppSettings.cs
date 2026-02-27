@@ -46,6 +46,12 @@ public class AppSettings
 
     /// <summary>会議アプリの自動検知を有効にする</summary>
     public bool MeetingDetectionEnabled { get; set; } = true;
+
+    /// <summary>プロンプトプリセット一覧</summary>
+    public List<PromptPreset> PromptPresets { get; set; } = new();
+
+    /// <summary>選択中のプリセットID（議事録生成時に使用）</summary>
+    public string SelectedPresetId { get; set; } = string.Empty;
 }
 
 /// <summary>音声エクスポートフォーマット</summary>

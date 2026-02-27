@@ -715,6 +715,18 @@
                                         Padding="10,8" Margin="0,0,0,8"
                                         Visibility="{Binding Transcription.IsMinutesPromptVisible, Converter={StaticResource BoolToVisibility}}">
                                     <StackPanel>
+                                        <!-- プリセット選択 -->
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="プリセット" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <ComboBox Style="{StaticResource DarkComboBox}"
+                                                      ItemContainerStyle="{StaticResource DarkComboBoxItem}"
+                                                      ItemsSource="{Binding Transcription.AvailablePresets}"
+                                                      SelectedItem="{Binding Transcription.SelectedPreset}"
+                                                      DisplayMemberPath="Name"
+                                                      Height="32" FontSize="12"/>
+                                        </DockPanel>
                                         <TextBlock Text="システムプロンプト" FontSize="11" FontWeight="SemiBold"
                                                    Foreground="{StaticResource DarkCardTextSecondaryBrush}"
                                                    Margin="0,0,0,4"/>
@@ -943,6 +955,18 @@
                                             Padding="10,8" Margin="0,10,0,0"
                                             Visibility="{Binding Transcription.IsTotonoePromptVisible, Converter={StaticResource BoolToVisibility}}">
                                         <StackPanel>
+                                            <!-- プリセット選択 -->
+                                            <DockPanel Margin="0,0,0,8">
+                                                <TextBlock Text="プリセット" FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <ComboBox Style="{StaticResource DarkComboBox}"
+                                                          ItemContainerStyle="{StaticResource DarkComboBoxItem}"
+                                                          ItemsSource="{Binding Transcription.AvailablePresets}"
+                                                          SelectedItem="{Binding Transcription.SelectedPreset}"
+                                                          DisplayMemberPath="Name"
+                                                          Height="32" FontSize="12"/>
+                                            </DockPanel>
                                             <TextBlock Text="システムプロンプト" FontSize="11" FontWeight="SemiBold"
                                                        Foreground="{StaticResource DarkCardTextSecondaryBrush}"
                                                        Margin="0,0,0,4"/>
