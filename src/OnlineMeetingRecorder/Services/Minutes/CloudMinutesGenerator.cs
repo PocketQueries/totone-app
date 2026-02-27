@@ -147,10 +147,10 @@ public class CloudMinutesGenerator : IMinutesGenerator, IDisposable
         return $"以下の会議文字起こしから議事録を作成してください。\n\n{header}{transcript.Trim()}";
     }
 
-    /// <summary>システムプロンプトを構築する</summary>
-    public static string BuildSystemPrompt(TotonoeContext? context)
+    /// <summary>デフォルトのベースシステムプロンプトを取得する</summary>
+    public static string GetDefaultSystemPromptBase()
     {
-        var basePrompt = """
+        return """
             あなたは会議の議事録を作成するアシスタントです。
             以下の会議の文字起こしを読み、議事録をMarkdown形式で作成してください。
 
@@ -161,24 +161,35 @@ public class CloudMinutesGenerator : IMinutesGenerator, IDisposable
             4. **次回予定** - 次回の会議予定
 
             簡潔かつ正確に記述してください。
-            """;
+            """.Trim();
+    }
+
+    /// <summary>追加情報の提案を出力させるプロンプト部分</summary>
+    public static string GetSuggestionPromptSuffix()
+    {
+        return """
+            また、議事録の最後に「## 追加情報の提案」というセクションを追加し、
+            この議事録をより正確に完成させるために確認・補足が必要な情報を箇条書きで記載してください。
+            具体的には以下の観点で提案してください：
+            - 文字起こしで聞き取りにくい・不明確な単語や固有名詞
+            - 不自然な文章や意味が通りにくい箇所
+            - 参加者の正確な氏名・所属
+            - 会議の目的や背景で補足があると良い情報
+            - 専門用語やドメイン固有の知識で確認が必要なもの
+
+            提案がない場合は「## 追加情報の提案」セクション自体を省略してください。
+            """.Trim();
+    }
+
+    /// <summary>システムプロンプトを構築する</summary>
+    public static string BuildSystemPrompt(TotonoeContext? context, string? basePromptOverride = null)
+    {
+        var basePrompt = basePromptOverride ?? GetDefaultSystemPromptBase();
 
         // 初回生成時（コンテキストなし）は追加情報の提案も出力させる
         if (context == null || !context.HasAnyContent())
         {
-            var promptWithSuggestions = basePrompt.Trim() + "\n\n" + """
-                また、議事録の最後に「## 追加情報の提案」というセクションを追加し、
-                この議事録をより正確に完成させるために確認・補足が必要な情報を箇条書きで記載してください。
-                具体的には以下の観点で提案してください：
-                - 文字起こしで聞き取りにくい・不明確な単語や固有名詞
-                - 不自然な文章や意味が通りにくい箇所
-                - 参加者の正確な氏名・所属
-                - 会議の目的や背景で補足があると良い情報
-                - 専門用語やドメイン固有の知識で確認が必要なもの
-
-                提案がない場合は「## 追加情報の提案」セクション自体を省略してください。
-                """;
-            return promptWithSuggestions.Trim();
+            return basePrompt.Trim() + "\n\n" + GetSuggestionPromptSuffix();
         }
 
         var sb = new StringBuilder(basePrompt.Trim());

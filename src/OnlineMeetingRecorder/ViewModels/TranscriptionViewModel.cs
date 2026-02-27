@@ -178,6 +178,15 @@ public partial class TranscriptionViewModel : ObservableObject
     [ObservableProperty]
     private bool _isTotonoePromptVisible;
 
+    // --- プロンプトプリセット選択 ---
+
+    /// <summary>利用可能なプロンプトプリセット一覧</summary>
+    public ObservableCollection<PromptPreset> AvailablePresets { get; } = new();
+
+    /// <summary>選択中のプロンプトプリセット</summary>
+    [ObservableProperty]
+    private PromptPreset? _selectedPreset;
+
     public ObservableCollection<TranscriptSegment> Segments { get; } = new();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -202,6 +211,7 @@ public partial class TranscriptionViewModel : ObservableObject
         _logger = logger;
 
         RefreshAvailableEngines();
+        RefreshAvailablePresets();
     }
 
     // CommunityToolkit.Mvvm の partial method hooks
@@ -529,6 +539,12 @@ public partial class TranscriptionViewModel : ObservableObject
             CurrentSession.Status = SessionStatus.Transcribed;
             await _sessionService.UpdateSessionAsync(CurrentSession);
 
+            // 文字起こし結果が変わったのでプロンプトをクリアし、次回生成時に再構築させる
+            MinutesSystemPrompt = string.Empty;
+            MinutesUserPrompt = string.Empty;
+            TotonoeSystemPrompt = string.Empty;
+            TotonoeUserPrompt = string.Empty;
+
             StopProcessingTimer();
             TranscriptionStatusText = $"文字起こし完了（{allSegments.Count}セグメント / {FormatElapsed()}）";
             CanGenerateMinutes = allSegments.Count > 0;
@@ -594,8 +610,9 @@ public partial class TranscriptionViewModel : ObservableObject
             };
             SetProcessingStatus(statusBase);
 
-            // プロンプトを更新
-            RefreshMinutesPrompts();
+            // プロンプトが空の場合のみ自動設定する（ユーザーの手動編集を保持）
+            if (string.IsNullOrWhiteSpace(MinutesSystemPrompt) || string.IsNullOrWhiteSpace(MinutesUserPrompt))
+                RefreshMinutesPrompts();
 
             // 議事録生成
             MinutesResult result;
@@ -739,8 +756,9 @@ public partial class TranscriptionViewModel : ObservableObject
 
             SetProcessingStatus("ととのえ中...追加情報を反映して議事録を再生成しています");
 
-            // プロンプトを更新（生成済み議事録ベース）
-            RefreshTotonoePrompts();
+            // プロンプトが空の場合のみ自動設定する（ユーザーの手動編集を保持）
+            if (string.IsNullOrWhiteSpace(TotonoeSystemPrompt) || string.IsNullOrWhiteSpace(TotonoeUserPrompt))
+                RefreshTotonoePrompts();
 
             MinutesResult result;
             // カスタムプロンプト（生成済み議事録ベース）で再生成
@@ -835,13 +853,78 @@ public partial class TranscriptionViewModel : ObservableObject
         }
     }
 
+    // --- プロンプトプリセット ---
+
+    /// <summary>プリセット一覧を設定から更新する</summary>
+    public void RefreshAvailablePresets()
+    {
+        AvailablePresets.Clear();
+        foreach (var preset in _settings.Settings.PromptPresets)
+            AvailablePresets.Add(preset);
+
+        SelectedPreset = AvailablePresets
+            .FirstOrDefault(p => p.Id == _settings.Settings.SelectedPresetId)
+            ?? AvailablePresets.FirstOrDefault();
+    }
+
+    partial void OnSelectedPresetChanged(PromptPreset? value)
+    {
+        if (value != null)
+        {
+            _settings.Settings.SelectedPresetId = value.Id;
+
+            // プロンプト表示中なら自動更新
+            if (IsMinutesPromptVisible)
+                UpdateMinutesSystemPromptFromPreset();
+            if (IsTotonoePromptVisible)
+                UpdateTotonoeSystemPromptFromPreset();
+        }
+    }
+
+    /// <summary>プリセット変更時にシステムプロンプトを更新する（セッションがなくてもプレビュー表示）</summary>
+    private void UpdateMinutesSystemPromptFromPreset()
+    {
+        if (CurrentSession != null && Segments.Count > 0)
+        {
+            RefreshMinutesPrompts();
+        }
+        else
+        {
+            var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+                ? SelectedPreset.SystemPrompt
+                : null;
+            MinutesSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null, basePrompt);
+        }
+    }
+
+    /// <summary>プリセット変更時にととのえシステムプロンプトを更新する</summary>
+    private void UpdateTotonoeSystemPromptFromPreset()
+    {
+        if (!string.IsNullOrWhiteSpace(MinutesText))
+        {
+            RefreshTotonoePrompts();
+        }
+        else
+        {
+            var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+                ? SelectedPreset.SystemPrompt
+                : null;
+            TotonoeSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null, basePrompt);
+        }
+    }
+
     // --- プロンプト編集機能 ---
 
     /// <summary>議事録用プロンプトを現在のセッション情報で更新する</summary>
     private void RefreshMinutesPrompts()
     {
         if (CurrentSession == null || Segments.Count == 0) return;
-        MinutesSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null);
+
+        // プリセットが選択されている場合はそのシステムプロンプトをベースに使用
+        var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+            ? SelectedPreset.SystemPrompt
+            : null;
+        MinutesSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null, basePrompt);
         MinutesUserPrompt = CloudMinutesGenerator.BuildUserMessage(CurrentSession, Segments.ToList());
     }
 
@@ -850,7 +933,12 @@ public partial class TranscriptionViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(MinutesText)) return;
         var context = BuildTotonoeContext();
-        TotonoeSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(context);
+
+        // プリセットが選択されている場合はそのシステムプロンプトをベースに使用
+        var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+            ? SelectedPreset.SystemPrompt
+            : null;
+        TotonoeSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(context, basePrompt);
         TotonoeUserPrompt = CloudMinutesGenerator.BuildTotonoeUserMessage(MinutesText);
     }
 
@@ -858,7 +946,7 @@ public partial class TranscriptionViewModel : ObservableObject
     private void ToggleMinutesPromptVisibility()
     {
         if (!IsMinutesPromptVisible)
-            RefreshMinutesPrompts();
+            UpdateMinutesSystemPromptFromPreset();
         IsMinutesPromptVisible = !IsMinutesPromptVisible;
     }
 
@@ -866,8 +954,20 @@ public partial class TranscriptionViewModel : ObservableObject
     private void ToggleTotonoePromptVisibility()
     {
         if (!IsTotonoePromptVisible)
-            RefreshTotonoePrompts();
+            UpdateTotonoeSystemPromptFromPreset();
         IsTotonoePromptVisible = !IsTotonoePromptVisible;
+    }
+
+    [RelayCommand]
+    private void ResetMinutesPrompts()
+    {
+        RefreshMinutesPrompts();
+    }
+
+    [RelayCommand]
+    private void ResetTotonoePrompts()
+    {
+        RefreshTotonoePrompts();
     }
 
     private async Task SaveTotonoeMinutesAsync(string minutes)
@@ -917,6 +1017,7 @@ public partial class TranscriptionViewModel : ObservableObject
     {
         IsTranscriptionConfigured = GetActiveService().IsAvailable;
         RefreshAvailableEngines();
+        RefreshAvailablePresets();
     }
 
     /// <summary>

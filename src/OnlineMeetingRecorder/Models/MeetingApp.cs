@@ -26,12 +26,16 @@ public static class MeetingAppInfo
         _ => app.ToString()
     };
 
-    /// <summary>検知対象のプロセス名一覧（Google Meet はブラウザタイトルで判定するため含まない）</summary>
-    public static readonly (MeetingApp App, string[] ProcessNames)[] ProcessRules =
+    /// <summary>
+    /// 検知対象のプロセス名一覧（Google Meet はブラウザタイトルで判定するため含まない）。
+    /// TitleKeywords が指定されている場合、プロセス存在に加えてウィンドウタイトル一致も要求する。
+    /// null の場合はプロセス存在のみで検知する。
+    /// </summary>
+    public static readonly (MeetingApp App, string[] ProcessNames, string[]? TitleKeywords)[] ProcessRules =
     [
-        (MeetingApp.Zoom, ["Zoom"]),
-        (MeetingApp.Teams, ["ms-teams"]),
-        (MeetingApp.Webex, ["CiscoCollabHost", "webexmta"]),
+        (MeetingApp.Zoom, ["Zoom"], ["Zoom Meeting", "Zoom Webinar", "Zoom ミーティング", "Zoom ウェビナー"]),
+        (MeetingApp.Teams, ["ms-teams"], null),  // Teams はタイトルだけでは会議中の区別が困難
+        (MeetingApp.Webex, ["CiscoCollabHost", "webexmta"], null),  // 会議専用プロセスのため不要
     ];
 
     /// <summary>Google Meet 検知用のブラウザプロセス名</summary>

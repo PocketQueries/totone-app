@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using OnlineMeetingRecorder.Models;
+using OnlineMeetingRecorder.Services.Minutes;
 
 namespace OnlineMeetingRecorder.Services.Settings;
 
@@ -33,7 +34,10 @@ public class SettingsService : ISettingsService
     public async Task LoadAsync()
     {
         if (!File.Exists(SettingsPath))
+        {
+            EnsureDefaultPreset();
             return;
+        }
 
         string json;
         try
@@ -53,6 +57,9 @@ public class SettingsService : ISettingsService
         {
             Settings.OpenAiApiKey = DecryptString(Settings.OpenAiApiKeyEncrypted);
         }
+
+        // デフォルトプリセットを保証
+        EnsureDefaultPreset();
 
         // マイグレーション: 旧形式の平文キー（openAiApiKey）が残っている場合
         if (string.IsNullOrEmpty(Settings.OpenAiApiKey))
@@ -94,6 +101,31 @@ public class SettingsService : ISettingsService
         var tempPath = SettingsPath + ".tmp";
         await File.WriteAllTextAsync(tempPath, json);
         File.Move(tempPath, SettingsPath, overwrite: true);
+    }
+
+    /// <summary>デフォルトプリセットが存在しない場合に追加する</summary>
+    private void EnsureDefaultPreset()
+    {
+        const string defaultPresetId = "default";
+
+        var defaultPreset = Settings.PromptPresets.FirstOrDefault(p => p.Id == defaultPresetId);
+        if (defaultPreset == null)
+        {
+            Settings.PromptPresets.Insert(0, new PromptPreset
+            {
+                Id = defaultPresetId,
+                Name = "デフォルト",
+                SystemPrompt = CloudMinutesGenerator.GetDefaultSystemPromptBase(),
+                IsBuiltIn = true
+            });
+        }
+
+        // 選択中プリセットが存在しない場合はデフォルトにフォールバック
+        if (string.IsNullOrEmpty(Settings.SelectedPresetId) ||
+            !Settings.PromptPresets.Any(p => p.Id == Settings.SelectedPresetId))
+        {
+            Settings.SelectedPresetId = defaultPresetId;
+        }
     }
 
     /// <summary>

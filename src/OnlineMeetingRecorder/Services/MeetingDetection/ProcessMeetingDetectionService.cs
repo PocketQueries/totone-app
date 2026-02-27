@@ -137,11 +137,19 @@ public class ProcessMeetingDetectionService : IMeetingDetectionService
             }
             else
             {
-                var processNames = MeetingAppInfo.ProcessRules
-                    .Where(r => r.App == app)
-                    .SelectMany(r => r.ProcessNames)
-                    .ToArray();
-                running = processNames.Length > 0 && IsProcessRunning(processNames);
+                var rule = MeetingAppInfo.ProcessRules.FirstOrDefault(r => r.App == app);
+                if (rule.ProcessNames == null || rule.ProcessNames.Length == 0)
+                {
+                    running = false;
+                }
+                else if (rule.TitleKeywords != null)
+                {
+                    running = IsProcessRunning(rule.ProcessNames) && HasWindowWithTitle(rule.ProcessNames, rule.TitleKeywords);
+                }
+                else
+                {
+                    running = IsProcessRunning(rule.ProcessNames);
+                }
             }
 
             if (!running)
@@ -165,12 +173,21 @@ public class ProcessMeetingDetectionService : IMeetingDetectionService
     {
         var currentlyRunning = new HashSet<MeetingApp>();
 
-        // プロセス名ベースの検知（Zoom, Teams, Webex）
-        foreach (var (app, processNames) in MeetingAppInfo.ProcessRules)
+        // プロセス名ベースの検知（必要に応じてウィンドウタイトルで補完）
+        foreach (var (app, processNames, titleKeywords) in MeetingAppInfo.ProcessRules)
         {
-            if (IsProcessRunning(processNames))
+            if (!IsProcessRunning(processNames)) continue;
+
+            if (titleKeywords == null)
             {
+                // タイトルキーワードなし: プロセス存在のみで検知
                 currentlyRunning.Add(app);
+            }
+            else
+            {
+                // タイトルキーワードあり: ウィンドウタイトルも一致する場合のみ検知
+                if (HasWindowWithTitle(processNames, titleKeywords))
+                    currentlyRunning.Add(app);
             }
         }
 
@@ -218,6 +235,59 @@ public class ProcessMeetingDetectionService : IMeetingDetectionService
             if (found) return true;
         }
         return false;
+    }
+
+    /// <summary>
+    /// 指定プロセス名のウィンドウの中に、いずれかのタイトルキーワードを含むものがあるか確認する。
+    /// </summary>
+    private static bool HasWindowWithTitle(string[] processNames, string[] titleKeywords)
+    {
+        var targetPids = new HashSet<uint>();
+        foreach (var name in processNames)
+        {
+            Process[] processes;
+            try { processes = Process.GetProcessesByName(name); }
+            catch { continue; }
+
+            foreach (var proc in processes)
+            {
+                try { targetPids.Add((uint)proc.Id); }
+                catch { }
+                finally { proc.Dispose(); }
+            }
+        }
+
+        if (targetPids.Count == 0) return false;
+
+        bool found = false;
+        EnumWindows((hWnd, _) =>
+        {
+            if (found) return false;
+            if (!IsWindowVisible(hWnd)) return true;
+
+            GetWindowThreadProcessId(hWnd, out var pid);
+            if (!targetPids.Contains(pid)) return true;
+
+            int length = GetWindowTextLength(hWnd);
+            if (length == 0) return true;
+
+            var sb = new StringBuilder(length + 1);
+            GetWindowText(hWnd, sb, sb.Capacity);
+            var title = sb.ToString();
+
+            foreach (var keyword in titleKeywords)
+            {
+                if (title.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                {
+                    found = true;
+                    return false;
+                }
+            }
+
+            return true;
+        }, IntPtr.Zero);
+
+        return found;
     }
 
     /// <summary>

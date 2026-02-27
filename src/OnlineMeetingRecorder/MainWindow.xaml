@@ -715,6 +715,30 @@
                                         Padding="10,8" Margin="0,0,0,8"
                                         Visibility="{Binding Transcription.IsMinutesPromptVisible, Converter={StaticResource BoolToVisibility}}">
                                     <StackPanel>
+                                        <!-- プリセット選択 -->
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="プリセット" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <Button Content="リセット" DockPanel.Dock="Right"
+                                                    Style="{StaticResource GhostButton}"
+                                                    Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                                                    Command="{Binding Transcription.ResetMinutesPromptsCommand}"
+                                                    Height="24" FontSize="10" Padding="6,0" Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="プロンプトをプリセットのデフォルトに戻す"/>
+                                            <ComboBox Style="{StaticResource DarkComboBox}"
+                                                      ItemContainerStyle="{StaticResource DarkComboBoxItem}"
+                                                      ItemsSource="{Binding Transcription.AvailablePresets}"
+                                                      SelectedItem="{Binding Transcription.SelectedPreset}"
+                                                      Height="32" FontSize="12">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </DockPanel>
                                         <TextBlock Text="システムプロンプト" FontSize="11" FontWeight="SemiBold"
                                                    Foreground="{StaticResource DarkCardTextSecondaryBrush}"
                                                    Margin="0,0,0,4"/>
@@ -943,6 +967,30 @@
                                             Padding="10,8" Margin="0,10,0,0"
                                             Visibility="{Binding Transcription.IsTotonoePromptVisible, Converter={StaticResource BoolToVisibility}}">
                                         <StackPanel>
+                                            <!-- プリセット選択 -->
+                                            <DockPanel Margin="0,0,0,8">
+                                                <TextBlock Text="プリセット" FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <Button Content="リセット" DockPanel.Dock="Right"
+                                                        Style="{StaticResource GhostButton}"
+                                                        Foreground="{StaticResource DarkCardTextSecondaryBrush}"
+                                                        Command="{Binding Transcription.ResetTotonoePromptsCommand}"
+                                                        Height="24" FontSize="10" Padding="6,0" Margin="8,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        ToolTip="プロンプトをプリセットのデフォルトに戻す"/>
+                                                <ComboBox Style="{StaticResource DarkComboBox}"
+                                                          ItemContainerStyle="{StaticResource DarkComboBoxItem}"
+                                                          ItemsSource="{Binding Transcription.AvailablePresets}"
+                                                          SelectedItem="{Binding Transcription.SelectedPreset}"
+                                                          Height="32" FontSize="12">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Name}"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </DockPanel>
                                             <TextBlock Text="システムプロンプト" FontSize="11" FontWeight="SemiBold"
                                                        Foreground="{StaticResource DarkCardTextSecondaryBrush}"
                                                        Margin="0,0,0,4"/>
