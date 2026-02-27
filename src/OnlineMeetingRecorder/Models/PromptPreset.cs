@@ -34,4 +34,7 @@ public class PromptPreset : INotifyPropertyChanged
 
     /// <inheritdoc/>
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <inheritdoc/>
+    public override string ToString() => Name;
 }

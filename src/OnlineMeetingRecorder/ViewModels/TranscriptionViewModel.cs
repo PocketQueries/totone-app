@@ -539,6 +539,12 @@ public partial class TranscriptionViewModel : ObservableObject
             CurrentSession.Status = SessionStatus.Transcribed;
             await _sessionService.UpdateSessionAsync(CurrentSession);
 
+            // 文字起こし結果が変わったのでプロンプトをクリアし、次回生成時に再構築させる
+            MinutesSystemPrompt = string.Empty;
+            MinutesUserPrompt = string.Empty;
+            TotonoeSystemPrompt = string.Empty;
+            TotonoeUserPrompt = string.Empty;
+
             StopProcessingTimer();
             TranscriptionStatusText = $"文字起こし完了（{allSegments.Count}セグメント / {FormatElapsed()}）";
             CanGenerateMinutes = allSegments.Count > 0;
@@ -604,8 +610,9 @@ public partial class TranscriptionViewModel : ObservableObject
             };
             SetProcessingStatus(statusBase);
 
-            // プロンプトを更新
-            RefreshMinutesPrompts();
+            // プロンプトが空の場合のみ自動設定する（ユーザーの手動編集を保持）
+            if (string.IsNullOrWhiteSpace(MinutesSystemPrompt) || string.IsNullOrWhiteSpace(MinutesUserPrompt))
+                RefreshMinutesPrompts();
 
             // 議事録生成
             MinutesResult result;
@@ -749,8 +756,9 @@ public partial class TranscriptionViewModel : ObservableObject
 
             SetProcessingStatus("ととのえ中...追加情報を反映して議事録を再生成しています");
 
-            // プロンプトを更新（生成済み議事録ベース）
-            RefreshTotonoePrompts();
+            // プロンプトが空の場合のみ自動設定する（ユーザーの手動編集を保持）
+            if (string.IsNullOrWhiteSpace(TotonoeSystemPrompt) || string.IsNullOrWhiteSpace(TotonoeUserPrompt))
+                RefreshTotonoePrompts();
 
             MinutesResult result;
             // カスタムプロンプト（生成済み議事録ベース）で再生成
@@ -867,9 +875,41 @@ public partial class TranscriptionViewModel : ObservableObject
 
             // プロンプト表示中なら自動更新
             if (IsMinutesPromptVisible)
-                RefreshMinutesPrompts();
+                UpdateMinutesSystemPromptFromPreset();
             if (IsTotonoePromptVisible)
-                RefreshTotonoePrompts();
+                UpdateTotonoeSystemPromptFromPreset();
+        }
+    }
+
+    /// <summary>プリセット変更時にシステムプロンプトを更新する（セッションがなくてもプレビュー表示）</summary>
+    private void UpdateMinutesSystemPromptFromPreset()
+    {
+        if (CurrentSession != null && Segments.Count > 0)
+        {
+            RefreshMinutesPrompts();
+        }
+        else
+        {
+            var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+                ? SelectedPreset.SystemPrompt
+                : null;
+            MinutesSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null, basePrompt);
+        }
+    }
+
+    /// <summary>プリセット変更時にととのえシステムプロンプトを更新する</summary>
+    private void UpdateTotonoeSystemPromptFromPreset()
+    {
+        if (!string.IsNullOrWhiteSpace(MinutesText))
+        {
+            RefreshTotonoePrompts();
+        }
+        else
+        {
+            var basePrompt = SelectedPreset != null && !string.IsNullOrWhiteSpace(SelectedPreset.SystemPrompt)
+                ? SelectedPreset.SystemPrompt
+                : null;
+            TotonoeSystemPrompt = CloudMinutesGenerator.BuildSystemPrompt(null, basePrompt);
         }
     }
 
@@ -906,7 +946,7 @@ public partial class TranscriptionViewModel : ObservableObject
     private void ToggleMinutesPromptVisibility()
     {
         if (!IsMinutesPromptVisible)
-            RefreshMinutesPrompts();
+            UpdateMinutesSystemPromptFromPreset();
         IsMinutesPromptVisible = !IsMinutesPromptVisible;
     }
 
@@ -914,8 +954,20 @@ public partial class TranscriptionViewModel : ObservableObject
     private void ToggleTotonoePromptVisibility()
     {
         if (!IsTotonoePromptVisible)
-            RefreshTotonoePrompts();
+            UpdateTotonoeSystemPromptFromPreset();
         IsTotonoePromptVisible = !IsTotonoePromptVisible;
+    }
+
+    [RelayCommand]
+    private void ResetMinutesPrompts()
+    {
+        RefreshMinutesPrompts();
+    }
+
+    [RelayCommand]
+    private void ResetTotonoePrompts()
+    {
+        RefreshTotonoePrompts();
     }
 
     private async Task SaveTotonoeMinutesAsync(string minutes)

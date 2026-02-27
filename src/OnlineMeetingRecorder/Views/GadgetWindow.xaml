@@ -23,14 +23,16 @@
         <BooleanToVisibilityConverter x:Key="WpfBoolToVisibility"/>
     </Window.Resources>
 
-    <!-- 外枠: Dark Card 風の角丸ボーダー + ドロップシャドウ -->
+    <!-- 外枠: Dark Card 風の角丸ボーダー + 全方向グロー + 縁取り -->
     <Border Background="#F01E1E1E"
+            BorderBrush="#40FFFFFF"
+            BorderThickness="1"
             CornerRadius="12"
             Padding="14,10"
             Width="380">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="16" ShadowDepth="2"
-                              Color="Black" Opacity="0.4"/>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="0"
+                              Color="#888888" Opacity="0.5"/>
         </Border.Effect>
 
         <Grid>

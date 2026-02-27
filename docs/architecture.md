@@ -291,10 +291,10 @@ GPU推論時は大幅に高速化される（目安: 100-300+ tokens/sec）。
 - **名前空間**: `OnlineMeetingRecorder.Services.MeetingDetection`
 - **監視方式**: `DispatcherTimer` による5秒間隔ポーリング（`AudioDeviceService` と同パターン）
 - **検知対象**:
-  - Zoom: プロセス名 `Zoom`
-  - Teams: プロセス名 `ms-teams`
+  - Zoom: プロセス名 `Zoom` + ウィンドウタイトル検証（`Zoom Meeting` / `Zoom ミーティング` 等を含む場合のみ検知）
+  - Teams: プロセス名 `ms-teams`（タイトルだけでは会議中の区別が困難なためプロセス存在のみ）
   - Google Meet: Chrome/Edge/Firefox のウィンドウタイトルに `Meet -` / `Google Meet` を含む
-  - Webex: プロセス名 `CiscoCollabHost` / `webexmta`
+  - Webex: プロセス名 `CiscoCollabHost` / `webexmta`（会議専用プロセスのためタイトル検証不要）
 - **重複通知防止**: `HashSet<MeetingApp>` で検知済みアプリを管理、プロセス消失まで再通知しない
 - **録音中スキップ**: `SetRecordingActive(bool)` で録音状態を通知、録音中は新規検知イベントを抑止
 - **イベント**: `MeetingDetected` / `MeetingEnded` を発火し、`SystemTrayService` がバルーン通知で応答
