@@ -283,6 +283,7 @@
                                        Margin="0,0,0,4"/>
                             <TextBox Text="{Binding PresetSystemPrompt, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource DarkTextBox}"
+                                     IsReadOnly="{Binding IsSelectedPresetBuiltIn}"
                                      Height="160"
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"

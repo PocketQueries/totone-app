@@ -147,14 +147,8 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnPresetNameChanged(string value)
     {
         if (_isUpdatingFromSelection || SelectedPreset == null) return;
+        // Name setter の INotifyPropertyChanged で ComboBox 表示が自動更新される
         SelectedPreset.Name = value;
-        // ObservableCollection の表示を更新するためリフレッシュ
-        var idx = PromptPresets.IndexOf(SelectedPreset);
-        if (idx >= 0)
-        {
-            PromptPresets[idx] = SelectedPreset;
-            SelectedPreset = SelectedPreset;
-        }
     }
 
     partial void OnPresetSystemPromptChanged(string value)
