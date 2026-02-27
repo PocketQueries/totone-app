@@ -42,7 +42,7 @@ Claude Code に Issue 番号または URL を渡して実装を依頼する。
 gh issue view #42 の内容を実装して
 
 # URL で指示
-https://github.com/PocketQueries/online_meeting_recorder/issues/42 を対応して
+https://github.com/PocketQueries/totonoe-app/issues/42 を対応して
 ```
 
 ### Claude Code が行うこと
